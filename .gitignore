@@ -1,0 +1,9 @@
+.env
+
+configs/*
+!configs/*.example.yml
+logs/*
+build/*
+.idea/*
+.vscode/*
+.DC/*

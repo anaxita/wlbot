@@ -1,0 +1,67 @@
+tg_bot_token: asd-123-asd
+debug: true
+log_file: logs/wlbot.log
+
+mikrotiks:
+  - id: 1
+    address: 172.19.1.0:80
+    login: wlbot
+    password: wlbot
+    default_wl: wl
+    is_default: true
+
+  - id: 2
+    address: 172.19.2.0:80
+    login: wlbot
+    password: wlbot
+    default_wl: wl
+    is_default: true
+    
+  - id: 3
+    address: 172.19.3.0:80
+    login: wlbot
+    password: wlbot
+    default_wl: wl
+    is_default: false
+
+chat_wls:
+  - chat_id: 100
+    mikrotik_id: 1
+    mikrotik_wl: pribor
+    use_default: true
+
+  - chat_id: 200
+    mikrotik_id: 3
+    mikrotik_wl: pribor
+    use_default: true
+
+  - chat_id: 300
+    mikrotik_id: 3
+    mikrotik_wl: pribor
+    use_default: false
+
+  - chat_id: 400
+    mikrotik_id: 3
+    mikrotik_wl: pribor
+    use_default: false
+
+database:
+  host: localhost
+  port: 5432
+  user: dev
+  password: dev
+  name: wlbot
+
+
+# telegram admin chat ids
+admin_chats:
+  - 100
+  - 200
+  - 300
+  - 400
+
+# telegram user ids, case is important
+admin_users:
+  - anaxita
+  - mishagl
+  - kmsys_manager
