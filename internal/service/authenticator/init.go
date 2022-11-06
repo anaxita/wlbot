@@ -1,16 +1,19 @@
-package authentificator
+package authenticator
+
+import "kms/wlbot/internal/helpers"
 
 type Service struct {
 	adminChats map[int64]struct{}
 	adminUsers map[string]struct{}
 }
 
-func New(adminChats map[int64]struct{}, adminUsers map[string]struct{}) *Service {
+func New(adminChats []int64, adminUsers []string) *Service {
 	return &Service{
-		adminChats: adminChats,
-		adminUsers: adminUsers,
+		adminChats: helpers.ToMap(adminChats),
+		adminUsers: helpers.ToMap(adminUsers),
 	}
 }
+
 func (s *Service) IsAdmin(chatID int64, username string) bool {
 	return s.IsAdminChat(chatID) || s.IsAdminUser(username)
 }
