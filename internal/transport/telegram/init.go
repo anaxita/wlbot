@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"context"
 	"gopkg.in/telebot.v3"
 	"kms/wlbot/internal/service/authenticator"
 	"kms/wlbot/internal/service/mikrotik"
@@ -24,12 +23,10 @@ func New(debug bool, bot *telebot.Bot, mikrotik *mikrotik.Service, auth *authent
 	}
 }
 
-func (h *Handler) Start(ctx context.Context) {
+func (h *Handler) Start() {
 	defer h.bot.Stop()
 
 	h.setRoutes()
 
-	go h.bot.Start()
-
-	<-ctx.Done()
+	h.bot.Start()
 }

@@ -44,7 +44,7 @@ func (c *Client) FindIP(ctx context.Context, m entity.Mikrotik, wl string, ip st
 	// return
 }
 
-func (c *Client) HealthCheck(ctx context.Context, devices ...config.Mikrotik) error {
+func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 	errs := make([]string, 0, len(devices))
 
 	var mu sync.Mutex

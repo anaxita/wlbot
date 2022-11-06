@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
 	"kms/wlbot/internal/dal/repository"
@@ -9,7 +8,6 @@ import (
 	"kms/wlbot/internal/service/authenticator"
 	"kms/wlbot/internal/service/config"
 	"kms/wlbot/internal/service/mikrotik"
-	"kms/wlbot/internal/service/scheduler"
 	"kms/wlbot/internal/transport/telegram"
 	"kms/wlbot/pkg/logging"
 	"log"
@@ -28,12 +26,6 @@ func main() {
 	l, err := logging.New(cfg.Debug, cfg.LogFile)
 	defer l.Sync()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// scheduler
-	scheduler.New(l, configService).Start(ctx)
-
 	// telegram bot
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token:   cfg.TGBotToken,
@@ -50,7 +42,7 @@ func main() {
 	mkrClient := mikrotikclient.New()
 
 	// check mikrotik devices health
-	err = mkrClient.HealthCheck(ctx, cfg.MikroTiks...)
+	err = mkrClient.HealthCheck(cfg.MikroTiks...)
 	if err != nil {
 		l.Panic(err)
 	}
@@ -60,5 +52,5 @@ func main() {
 	auth := authenticator.New(cfg.AdminChats, cfg.AdminUsers)
 
 	// api
-	telegram.New(cfg.Debug, bot, mkr, auth).Start(ctx)
+	telegram.New(cfg.Debug, bot, mkr, auth).Start()
 }
