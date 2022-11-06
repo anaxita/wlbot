@@ -1,7 +1,8 @@
-tg_bot_token: asd-123-asd
-debug: true
-log_file: logs/wlbot.log
+tg_bot_token: asd-123-asd # your telegram bot token
+debug: true # enable debug mode. In debug mode the program will wirte logs in stdout and file in a human-readable format.
+log_file: logs/wlbot.log # path to log file
 
+# mikrotik devices, all fields are required
 mikrotiks:
   - id: 1
     address: 172.19.1.0:80
@@ -24,6 +25,7 @@ mikrotiks:
     default_wl: wl
     is_default: false
 
+# telegram chat settings, if you need to set a specific white list to a chat. Also you can set use_default: true to use default wl from default mikrotiks.
 chat_wls:
   - chat_id: 100
     mikrotik_id: 1
@@ -45,14 +47,6 @@ chat_wls:
     mikrotik_wl: pribor
     use_default: false
 
-database:
-  host: localhost
-  port: 5432
-  user: dev
-  password: dev
-  name: wlbot
-
-
 # telegram admin chat ids
 admin_chats:
   - 100
@@ -60,8 +54,7 @@ admin_chats:
   - 300
   - 400
 
-# telegram user ids, case is important
+# telegram admin user ids, case is important - who can add ip with subnets
 admin_users:
   - anaxita
-  - mishagl
-  - kmsys_manager
+  - ilonmask
