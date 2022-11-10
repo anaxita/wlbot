@@ -1,3 +1,4 @@
+http_port: '80'
 tg_bot_token: asd-123-asd # your telegram bot token
 debug: true # enable debug mode. In debug mode the program will wirte logs in stdout and file in a human-readable format.
 log_file: logs/wlbot.log # path to log file

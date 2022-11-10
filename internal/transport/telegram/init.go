@@ -1,9 +1,10 @@
 package telegram
 
 import (
-	"gopkg.in/telebot.v3"
 	"kms/wlbot/internal/service/authenticator"
 	"kms/wlbot/internal/service/mikrotik"
+
+	"gopkg.in/telebot.v3"
 )
 
 type Handler struct {
@@ -28,5 +29,5 @@ func (h *Handler) Start() {
 
 	h.setRoutes()
 
-	h.bot.Start()
+	go h.bot.Start()
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"kms/wlbot/internal/entity"
 	"kms/wlbot/internal/service/config"
 	"kms/wlbot/internal/xerrors"
@@ -11,10 +12,13 @@ type R struct {
 	devices        []entity.Mikrotik
 	defaultDevices []entity.Mikrotik
 	chatWLs        []entity.ChatWL
+	adminChatIDs   []int64
 }
 
-func New(devices []config.Mikrotik, chatWLs []config.ChatWL) *R {
+func New(devices []config.Mikrotik, chatWLs []config.ChatWL, adminChatIDs []int64) *R {
 	var r R
+
+	r.adminChatIDs = adminChatIDs
 
 	for _, d := range devices {
 		m := entity.Mikrotik(d)
@@ -34,7 +38,15 @@ func New(devices []config.Mikrotik, chatWLs []config.ChatWL) *R {
 }
 
 func (r *R) ChatWLs(ctx context.Context, chatID int64) ([]entity.ChatWL, error) {
-	return r.chatWLs, nil
+	var chats []entity.ChatWL
+
+	for _, c := range r.chatWLs {
+		if c.ChatID == chatID {
+			chats = append(chats, c)
+		}
+	}
+
+	return chats, nil
 }
 
 func (r *R) DefaultMikroTiks(ctx context.Context) ([]entity.Mikrotik, error) {
@@ -49,4 +61,8 @@ func (r *R) MikroTikByID(ctx context.Context, id int64) (entity.Mikrotik, error)
 	}
 
 	return entity.Mikrotik{}, xerrors.ErrNotFound
+}
+
+func (r *R) AdminChatIDs() []int64 {
+	return r.adminChatIDs
 }

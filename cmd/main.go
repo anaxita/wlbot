@@ -1,27 +1,28 @@
 package main
 
 import (
-	"go.uber.org/zap"
-	"gopkg.in/telebot.v3"
+	"log"
+
 	"kms/wlbot/internal/dal/repository"
 	"kms/wlbot/internal/external/mikrotikclient"
 	"kms/wlbot/internal/service/authenticator"
 	"kms/wlbot/internal/service/config"
 	"kms/wlbot/internal/service/mikrotik"
+	"kms/wlbot/internal/transport/rest"
 	"kms/wlbot/internal/transport/telegram"
 	"kms/wlbot/pkg/logging"
-	"log"
+
+	"go.uber.org/zap"
+	"gopkg.in/telebot.v3"
 )
 
 const configPath = "configs/app.yml"
 
 func main() {
-	configService, err := config.New(configPath)
+	cfg, err := config.New(configPath)
 	if err != nil {
-		log.Panic(err)
+		log.Panic("loadl config: ", err)
 	}
-
-	cfg := configService.Config()
 
 	l, err := logging.New(cfg.Debug, cfg.LogFile)
 	defer l.Sync()
@@ -36,7 +37,7 @@ func main() {
 	}
 
 	// repository
-	repo := repository.New(cfg.MikroTiks, cfg.ChatWLs)
+	repo := repository.New(cfg.MikroTiks, cfg.ChatWLs, cfg.AdminChats)
 
 	// external services
 	mkrClient := mikrotikclient.New()
@@ -53,4 +54,8 @@ func main() {
 
 	// api
 	telegram.New(cfg.Debug, bot, mkr, auth).Start()
+
+	server := rest.NewServer(cfg.HTTPPort, mkr)
+
+	l.Fatal(server.Start())
 }

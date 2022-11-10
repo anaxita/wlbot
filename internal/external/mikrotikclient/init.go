@@ -3,30 +3,35 @@ package mikrotikclient
 import (
 	"context"
 	"fmt"
-	"gopkg.in/routeros.v2"
-	"kms/wlbot/internal/entity"
-	"kms/wlbot/internal/service/config"
-	"kms/wlbot/internal/xerrors"
 	"strings"
 	"sync"
 	"time"
+
+	"kms/wlbot/internal/entity"
+	"kms/wlbot/internal/service/config"
+	"kms/wlbot/internal/xerrors"
+
+	"gopkg.in/routeros.v2"
 )
 
 type Client struct {
+	mu    sync.Mutex
+	conns map[int64]*routeros.Client
 }
 
 func New() *Client {
-	return &Client{}
+	return &Client{
+		conns: make(map[int64]*routeros.Client),
+	}
 }
 
 func (c *Client) FindIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (isDynamic bool, err error) {
 	return true, nil // TODO replace with real implementation
 
-	// client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, time.Second*3)
+	// client, err := c.dial(m)
 	// if err != nil {
 	// 	return
 	// }
-	// defer client.Close()
 	//
 	// r, err := client.Run(
 	// 	"/ip/firewall/address-list/print",
@@ -47,24 +52,24 @@ func (c *Client) FindIP(ctx context.Context, m entity.Mikrotik, wl string, ip st
 func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 	errs := make([]string, 0, len(devices))
 
-	var mu sync.Mutex
 	var wg sync.WaitGroup
-
 	wg.Add(len(devices))
 
 	for _, v := range devices {
 		go func(v config.Mikrotik) {
 			defer wg.Done()
+
+			c.mu.Lock()
+			defer c.mu.Unlock()
+
 			client, err := routeros.DialTimeout(v.Address, v.Login, v.Password, time.Second*3)
 			if err != nil {
-				mu.Lock()
-				defer mu.Unlock()
 
 				errs = append(errs, err.Error())
 				return
 			}
 
-			client.Close()
+			c.conns[v.ID] = client
 		}(v)
 	}
 
@@ -82,11 +87,10 @@ func (c *Client) AddIP(ctx context.Context, m entity.Mikrotik, ip, comment strin
 }
 
 func (c *Client) AddIPToCustomWL(ctx context.Context, m entity.Mikrotik, wl, ip, comment string) error {
-	client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, time.Second*3)
+	client, err := c.dial(m)
 	if err != nil {
 		return err
 	}
-	defer client.Close()
 
 	_, err = client.Run("/ip/firewall/address-list/add", "=list="+wl, "=address="+ip, "=comment=\""+comment+"\"")
 
@@ -94,11 +98,10 @@ func (c *Client) AddIPToCustomWL(ctx context.Context, m entity.Mikrotik, wl, ip,
 }
 
 func (c *Client) RemoveIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (err error) {
-	client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, time.Second*3)
+	client, err := c.dial(m)
 	if err != nil {
 		return
 	}
-	defer client.Close()
 
 	r, err := client.Run(
 		"/ip/firewall/address-list/print",
@@ -130,4 +133,24 @@ func (c *Client) RemoveIP(ctx context.Context, m entity.Mikrotik, wl string, ip 
 	}
 
 	return
+}
+
+// dial returns a cached connection to the Mikrotik device or creates a new one.
+func (c *Client) dial(m entity.Mikrotik) (*routeros.Client, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	client, ok := c.conns[m.ID]
+	if ok {
+		return client, nil
+	}
+
+	client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, time.Second*3)
+	if err != nil {
+		return nil, err
+	}
+
+	c.conns[m.ID] = client
+
+	return client, nil
 }
