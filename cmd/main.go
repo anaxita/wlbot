@@ -53,7 +53,7 @@ func main() {
 	auth := authenticator.New(cfg.AdminChats, cfg.AdminUsers)
 
 	// api
-	telegram.New(cfg.Debug, bot, mkr, auth).Start()
+	go telegram.New(cfg.Debug, bot, mkr, auth).Start()
 
 	server := rest.NewServer(cfg.HTTPPort, mkr)
 

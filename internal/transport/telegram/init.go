@@ -29,5 +29,5 @@ func (h *Handler) Start() {
 
 	h.setRoutes()
 
-	go h.bot.Start()
+	h.bot.Start()
 }

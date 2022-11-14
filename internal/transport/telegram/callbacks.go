@@ -2,13 +2,17 @@ package telegram
 
 import (
 	"context"
+
 	tele "gopkg.in/telebot.v3"
 )
 
 func (h *Handler) approveAddIP(c tele.Context) error {
-	defer c.Delete()
+	err := h.mikrotik.AddIPFromChat(context.TODO(), c.Chat().ID, c.Data())
+	if err != nil {
+		return err
+	}
 
-	return h.mikrotik.AddIPFromChat(context.TODO(), c.Chat().ID, c.Data())
+	return c.Reply("IP успешно добавлен")
 }
 
 func (h *Handler) declineAddIP(c tele.Context) error {
