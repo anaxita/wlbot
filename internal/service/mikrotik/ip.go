@@ -3,6 +3,7 @@ package mikrotik
 import (
 	"context"
 	"errors"
+
 	"kms/wlbot/internal/entity"
 	"kms/wlbot/internal/xerrors"
 )
@@ -33,20 +34,20 @@ func (s *Service) AddIPToDefaultMikrotiks(ctx context.Context, ip, comment strin
 	}
 
 	for _, m := range mikroTiks {
-		s.l.Infow("add ip to default mikrotik", "mikrotik_address", m.Address, "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
+		s.l.Debugw("add ip to default mikrotik", "mikrotik_address", m.Address, "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 
 		isDynamic, err := s.device.FindIP(ctx, m, m.DefaultWL, ip)
 		switch {
 		case err == nil:
 			if isDynamic {
-				s.l.Infow("found dynamic ip, try to remove", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
+				s.l.Debugw("found dynamic ip, try to remove", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 
 				err = s.device.RemoveIP(ctx, m, m.DefaultWL, ip)
 				if err != nil {
 					return err
 				}
 
-				s.l.Infow("ip successfully removed", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
+				s.l.Debugw("ip successfully removed", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 			}
 
 			err = s.device.AddIP(ctx, m, ip, comment)
@@ -55,14 +56,14 @@ func (s *Service) AddIPToDefaultMikrotiks(ctx context.Context, ip, comment strin
 			}
 
 		case errors.Is(err, xerrors.ErrNotFound):
-			s.l.Infow("ip is not found, try to add", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
+			s.l.Debugw("ip is not found, try to add", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 
 			err = s.device.AddIP(ctx, m, ip, comment)
 			if err != nil {
 				return err
 			}
 
-			s.l.Infow("ip successfully added", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
+			s.l.Debugw("ip successfully added", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 		default:
 			return err
 		}
@@ -77,7 +78,7 @@ func (s *Service) addIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatW
 	addToDefault := false
 
 	for _, v := range wls {
-		s.l.Infow("add ip to custom mikrotik", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
+		s.l.Debugw("add ip to custom mikrotik", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
 
 		if v.UseDefault {
 			addToDefault = true
@@ -92,14 +93,14 @@ func (s *Service) addIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatW
 		switch {
 		case err == nil:
 			if isDynamic {
-				s.l.Infow("found dynamic ip, try to remove", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
+				s.l.Debugw("found dynamic ip, try to remove", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
 
 				err = s.device.RemoveIP(ctx, m, v.MikrotikWL, ip)
 				if err != nil {
 					return err
 				}
 
-				s.l.Infow("ip successfully removed", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
+				s.l.Debugw("ip successfully removed", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
 			}
 
 			err = s.device.AddIPToCustomWL(ctx, m, v.MikrotikWL, ip, comment)
@@ -108,21 +109,21 @@ func (s *Service) addIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatW
 			}
 
 		case errors.Is(err, xerrors.ErrNotFound):
-			s.l.Infow("ip is not found, try to add", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
+			s.l.Debugw("ip is not found, try to add", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
 
 			err = s.device.AddIPToCustomWL(ctx, m, v.MikrotikWL, ip, comment)
 			if err != nil {
 				return err
 			}
 
-			s.l.Infow("ip successfully added", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
+			s.l.Debugw("ip successfully added", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
 		default:
 			return err
 		}
 	}
 
 	if addToDefault {
-		s.l.Infow("try to add ip to default mikrotiks", "ip", ip)
+		s.l.Debugw("try to add ip to default mikrotiks", "ip", ip)
 
 		return s.AddIPToDefaultMikrotiks(ctx, ip, comment)
 	}
