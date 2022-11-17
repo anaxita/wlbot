@@ -1,5 +1,5 @@
 .env
-
+bin/*
 configs/*
 !configs/*.example.yml
 logs/*
