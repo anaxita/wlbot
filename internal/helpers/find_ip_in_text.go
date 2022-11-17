@@ -8,9 +8,9 @@ import (
 	"wlbot/internal/xerrors"
 )
 
-var findIPRegexp = regexp.MustCompile(`(\d.{1,3}){1,3}`)
+var findIPRegexp = regexp.MustCompile(`[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}`)
 
-var findIPWithCIDRRegexp = regexp.MustCompile(`(\d.{1,3}){1,3}/\d{1,3}`)
+var findIPWithCIDRRegexp = regexp.MustCompile(`[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,3}`)
 
 func FindIP(text string) (ip net.IP, ipNet *net.IPNet, err error) {
 	defer func() { err = xerrors.Wrap(err, "failed to find ip in text") }()
