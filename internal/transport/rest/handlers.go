@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"kms/wlbot/internal/helpers"
+	"wlbot/internal/helpers"
 
 	"go.uber.org/zap"
 )

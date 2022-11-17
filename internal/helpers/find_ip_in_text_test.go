@@ -1,10 +1,12 @@
 package helpers
 
 import (
-	"github.com/stretchr/testify/require"
-	"kms/wlbot/internal/xerrors"
 	"net"
 	"testing"
+
+	"wlbot/internal/xerrors"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestFindIP4(t *testing.T) {

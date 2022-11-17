@@ -1,8 +1,8 @@
 package telegram
 
 import (
-	"kms/wlbot/internal/service/authenticator"
-	"kms/wlbot/internal/service/mikrotik"
+	"wlbot/internal/service/authenticator"
+	"wlbot/internal/service/mikrotik"
 
 	"gopkg.in/telebot.v3"
 )

@@ -2,8 +2,10 @@ package mikrotik
 
 import (
 	"context"
+
+	"wlbot/internal/entity"
+
 	"go.uber.org/zap"
-	"kms/wlbot/internal/entity"
 )
 
 type Repository interface {

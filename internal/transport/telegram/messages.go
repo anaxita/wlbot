@@ -2,9 +2,11 @@ package telegram
 
 import (
 	"fmt"
-	tele "gopkg.in/telebot.v3"
-	"kms/wlbot/internal/helpers"
 	"net"
+
+	"wlbot/internal/helpers"
+
+	tele "gopkg.in/telebot.v3"
 )
 
 func (h *Handler) message(c tele.Context) error {

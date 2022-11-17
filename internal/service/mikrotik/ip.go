@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"kms/wlbot/internal/entity"
-	"kms/wlbot/internal/xerrors"
+	"wlbot/internal/entity"
+	"wlbot/internal/xerrors"
 )
 
 func (s *Service) AddIPFromChat(ctx context.Context, chatID int64, ip string, comment string) (err error) {

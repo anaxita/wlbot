@@ -3,8 +3,8 @@ package rest
 import (
 	"net/http"
 
-	"kms/wlbot/internal/service/mikrotik"
-	"kms/wlbot/internal/service/notificator"
+	"wlbot/internal/service/mikrotik"
+	"wlbot/internal/service/notificator"
 
 	"go.uber.org/zap"
 )
