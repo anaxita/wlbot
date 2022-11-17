@@ -92,7 +92,7 @@ func (c *Client) AddIPToCustomWL(ctx context.Context, m entity.Mikrotik, wl, ip,
 		return err
 	}
 
-	_, err = client.Run("/ip/firewall/address-list/add", "=list="+wl, "=address="+ip, "=comment=\""+comment+"\"")
+	_, err = client.Run("/ip/firewall/address-list/add", "=list="+wl, "=address="+ip, "=comment="+comment+"")
 
 	return err
 }
