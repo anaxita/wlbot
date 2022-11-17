@@ -1,6 +1,8 @@
 package logging
 
 import (
+	"kms/wlbot/pkg/version"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -40,7 +42,7 @@ func New(debug bool, logfile string) (*zap.SugaredLogger, error) {
 		},
 		OutputPaths:      []string{"stderr", logfile},
 		ErrorOutputPaths: []string{"stderr", logfile},
-		InitialFields:    nil,
+		InitialFields:    map[string]interface{}{"version": version.V},
 	}
 
 	l, err := cfg.Build()

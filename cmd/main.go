@@ -51,6 +51,7 @@ func main() {
 	if err != nil {
 		l.Panic(err)
 	}
+	l.Debug("mikrotik devices health check: ok")
 
 	// internal services
 	mkr := mikrotik.New(l, repo, mkrClient)
@@ -77,6 +78,7 @@ func main() {
 		close(doneCh)
 	}()
 
+	l.Debug("HTTP server started at:", cfg.HTTPPort)
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		l.Fatal("HTTP server listen and serve failed:", zap.Error(err))
 	}
