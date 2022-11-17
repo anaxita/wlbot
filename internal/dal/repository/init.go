@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
-	"kms/wlbot/internal/entity"
-	"kms/wlbot/internal/service/config"
-	"kms/wlbot/internal/xerrors"
+	"wlbot/internal/entity"
+	"wlbot/internal/service/config"
+	"wlbot/internal/xerrors"
 )
 
 type R struct {

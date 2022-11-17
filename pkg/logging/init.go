@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"kms/wlbot/pkg/version"
+	"wlbot/pkg/version"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

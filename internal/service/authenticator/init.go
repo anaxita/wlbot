@@ -1,6 +1,6 @@
 package authenticator
 
-import "kms/wlbot/internal/helpers"
+import "wlbot/internal/helpers"
 
 type Service struct {
 	adminChats map[int64]struct{}

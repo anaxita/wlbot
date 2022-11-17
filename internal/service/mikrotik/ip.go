@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"kms/wlbot/internal/entity"
-	"kms/wlbot/internal/xerrors"
+	"wlbot/internal/entity"
+	"wlbot/internal/xerrors"
 )
 
 func (s *Service) AddIPFromChat(ctx context.Context, chatID int64, ip string, comment string) (err error) {
@@ -42,7 +42,7 @@ func (s *Service) AddIPToDefaultMikrotiks(ctx context.Context, ip, comment strin
 				s.l.Debugw("found dynamic ip, try to remove", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 
 				err = s.device.RemoveIP(ctx, m, m.DefaultWL, ip)
-				if err != nil {
+				if err != nil && !errors.Is(err, xerrors.ErrNotFound) {
 					return err
 				}
 

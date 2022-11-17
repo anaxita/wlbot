@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"kms/wlbot/internal/helpers"
+	"wlbot/internal/helpers"
 
 	tele "gopkg.in/telebot.v3"
 )

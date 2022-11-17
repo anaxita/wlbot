@@ -1,10 +1,11 @@
 package helpers
 
 import (
-	"kms/wlbot/internal/xerrors"
 	"net"
 	"regexp"
 	"strings"
+
+	"wlbot/internal/xerrors"
 )
 
 var findIPRegexp = regexp.MustCompile(`(\d.{1,3}){1,3}`)
