@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
 
 	"kms/wlbot/internal/dal/repository"
 	"kms/wlbot/internal/external/mikrotikclient"
@@ -55,7 +59,27 @@ func main() {
 	// api
 	go telegram.New(cfg.Debug, bot, mkr, auth).Start()
 
-	server := rest.NewServer(cfg.HTTPPort, mkr)
+	srv := rest.NewServer(cfg.HTTPPort, mkr)
 
-	l.Fatal(server.Start())
+	doneCh := make(chan struct{})
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt)
+		<-sigint
+
+		bot.Stop()
+		l.Info("Telegram bot stopped")
+
+		if err := srv.Shutdown(context.Background()); err != nil {
+			l.Errorf("HTTP server shutdown failed: %v", err)
+		}
+
+		close(doneCh)
+	}()
+
+	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+		l.Fatalf("HTTP server listen and serve failed: %v", err)
+	}
+
+	<-doneCh
 }

@@ -27,10 +27,6 @@ func NewServer(port string, mikrotik *mikrotik.Service) *Server {
 	}
 }
 
-func (s *Server) Start() error {
-	return s.ListenAndServe()
-}
-
 func (s *Server) setRoutes() {
 	r := http.NewServeMux()
 	r.HandleFunc("/send", s.CorsHandler(s.SendHandler()))
