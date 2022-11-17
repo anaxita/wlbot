@@ -8,15 +8,13 @@ import (
 	"kms/wlbot/internal/xerrors"
 )
 
-func (s *Service) AddIPFromChat(ctx context.Context, chatID int64, ip string) (err error) {
+func (s *Service) AddIPFromChat(ctx context.Context, chatID int64, ip string, comment string) (err error) {
 	defer func() { err = xerrors.Wrap(err, "failed to add ip from chat") }()
 
 	wls, err := s.repo.ChatWLs(ctx, chatID)
 	if err != nil {
 		return err
 	}
-
-	comment := ""
 
 	if len(wls) > 0 {
 		return s.addIPToCustomMikrotiks(ctx, wls, ip, comment)
@@ -34,7 +32,8 @@ func (s *Service) AddIPToDefaultMikrotiks(ctx context.Context, ip, comment strin
 	}
 
 	for _, m := range mikroTiks {
-		s.l.Debugw("add ip to default mikrotik", "mikrotik_address", m.Address, "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
+		s.l.Debugw("add ip to default mikrotik", "mikrotik_address", m.Address, "mikrotik_id", m.ID, "wl", m.DefaultWL,
+			"ip", ip)
 
 		isDynamic, err := s.device.FindIP(ctx, m, m.DefaultWL, ip)
 		switch {

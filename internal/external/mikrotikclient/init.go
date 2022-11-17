@@ -103,36 +103,27 @@ func (c *Client) RemoveIP(ctx context.Context, m entity.Mikrotik, wl string, ip 
 		return
 	}
 
-	r, err := client.Run(
-		"/ip/firewall/address-list/print",
-		"=.proplist=.id",
-		"=list="+wl,
-		"=address="+ip,
-	)
+	findIP, err := client.Run("/ip/firewall/address-list/print", "?address="+ip, "?list="+wl)
 	if err != nil {
-		return
+		return err
 	}
 
-	l := len(r.Re)
+	l := len(findIP.Re)
 	if l == 0 || l > 1 {
 		return xerrors.ErrNotFound
 	}
 
-	id, ok := r.Re[0].Map[".id"]
+	ipID, ok := findIP.Re[0].Map[".id"]
 	if !ok {
 		return xerrors.ErrNotFound
 	}
 
-	r, err = client.Run(
-		"/ip/firewall/address-list/remove",
-		"=list="+wl,
-		"=.id="+id,
-	)
+	_, err = client.Run("/ip/firewall/address-list/remove", "=.id="+ipID)
 	if err != nil {
-		return
+		return err
 	}
 
-	return
+	return nil
 }
 
 // dial returns a cached connection to the Mikrotik device or creates a new one.

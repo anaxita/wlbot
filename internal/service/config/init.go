@@ -74,24 +74,24 @@ func (a App) validate() error {
 	}
 
 	if a.LogFile == "" {
-		mapErrs["debug"] = "empty"
+		mapErrs["logfile"] = "empty"
 	}
 
-	if len(a.MikroTiks) == 0 {
-		mapErrs["log_file"] = "empty"
-	}
-
-	if len(a.ChatWLs) == 0 {
-		mapErrs["mikrotiks"] = "empty"
-	}
-
-	if len(a.AdminChats) == 0 {
-		mapErrs["chat_wls"] = "empty"
-	}
-
-	if len(a.AdminUsers) == 0 {
-		mapErrs["admin_chats"] = "empty"
-	}
+	// if len(a.MikroTiks) == 0 {
+	// 	mapErrs["mikrotiks"] = "empty"
+	// }
+	//
+	// if len(a.ChatWLs) == 0 {
+	// 	mapErrs["chat_wls"] = "empty"
+	// }
+	//
+	// if len(a.AdminChats) == 0 {
+	// 	mapErrs["admin_chats"] = "empty"
+	// }
+	//
+	// if len(a.AdminUsers) == 0 {
+	// 	mapErrs["admin_users"] = "empty"
+	// }
 
 	if len(mapErrs) > 0 {
 		var b strings.Builder

@@ -25,7 +25,7 @@ const configPath = "configs/app.yml"
 func main() {
 	cfg, err := config.New(configPath)
 	if err != nil {
-		log.Panic("loadl config: ", err)
+		log.Panic("load config: ", err)
 	}
 
 	l, err := logging.New(cfg.Debug, cfg.LogFile)
@@ -71,14 +71,14 @@ func main() {
 		l.Info("Telegram bot stopped")
 
 		if err := srv.Shutdown(context.Background()); err != nil {
-			l.Errorf("HTTP server shutdown failed: %v", err)
+			l.Error("HTTP server shutdown failed:", zap.Error(err))
 		}
 
 		close(doneCh)
 	}()
 
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-		l.Fatalf("HTTP server listen and serve failed: %v", err)
+		l.Fatal("HTTP server listen and serve failed:", zap.Error(err))
 	}
 
 	<-doneCh
