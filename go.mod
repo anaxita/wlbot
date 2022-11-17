@@ -1,4 +1,4 @@
-module kms/wlbot
+module wlbot
 
 go 1.19
 

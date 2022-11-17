@@ -42,7 +42,7 @@ func (s *Service) AddIPToDefaultMikrotiks(ctx context.Context, ip, comment strin
 				s.l.Debugw("found dynamic ip, try to remove", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 
 				err = s.device.RemoveIP(ctx, m, m.DefaultWL, ip)
-				if err != nil {
+				if err != nil && !errors.Is(err, xerrors.ErrNotFound) {
 					return err
 				}
 
