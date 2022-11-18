@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"wlbot/internal/xerrors"
+
 	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
 )
@@ -27,7 +29,7 @@ func (s *Service) SendToAdminChats(text string) error {
 	errs := make([]string, 0)
 
 	for _, chatID := range s.repo.AdminChatIDs() {
-		_, err := s.bot.Send(&telebot.Chat{ID: chatID}, text)
+		_, err := s.bot.Send(telebot.ChatID(chatID), text)
 		if err != nil {
 			s.l.Errorw("failed to send message to admin chat", "chatID", chatID, "error", err)
 			errs = append(errs, err.Error())
@@ -35,7 +37,10 @@ func (s *Service) SendToAdminChats(text string) error {
 	}
 
 	if len(errs) > 0 {
-		return fmt.Errorf("failed to send message to admin chats: %s", strings.Join(errs, "; "))
+		return xerrors.Wrap(
+			xerrors.ErrSendMessage,
+			fmt.Sprintf("failed to send message to admin chats: %s", strings.Join(errs, "; ")),
+		)
 	}
 
 	return nil

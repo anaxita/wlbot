@@ -2,7 +2,6 @@ package mikrotikclient
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -21,12 +20,13 @@ type Client struct {
 
 func New() *Client {
 	return &Client{
+		mu:    sync.Mutex{},
 		conns: make(map[int64]*routeros.Client),
 	}
 }
 
 func (c *Client) FindIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (isDynamic bool, err error) {
-	return true, nil // TODO replace with real implementation
+	return true, nil // TODO: replace with real implementation
 
 	// client, err := c.dial(m)
 	// if err != nil {
@@ -53,6 +53,7 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 	errs := make([]string, 0, len(devices))
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(devices))
 
 	for _, v := range devices {
@@ -62,10 +63,12 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 			c.mu.Lock()
 			defer c.mu.Unlock()
 
-			client, err := routeros.DialTimeout(v.Address, v.Login, v.Password, time.Second*3)
-			if err != nil {
+			const timeout = time.Second * 3
 
+			client, err := routeros.DialTimeout(v.Address, v.Login, v.Password, timeout)
+			if err != nil {
 				errs = append(errs, err.Error())
+
 				return
 			}
 
@@ -76,7 +79,7 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 	wg.Wait()
 
 	if len(errs) > 0 {
-		return fmt.Errorf("health check failed: %s", strings.Join(errs, "; "))
+		return xerrors.Wrap(xerrors.ErrHealthCheck, strings.Join(errs, "; "))
 	}
 
 	return nil
@@ -136,7 +139,9 @@ func (c *Client) dial(m entity.Mikrotik) (*routeros.Client, error) {
 		return client, nil
 	}
 
-	client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, time.Second*3)
+	const timeout = time.Second * 3
+
+	client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, timeout)
 	if err != nil {
 		return nil, err
 	}

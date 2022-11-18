@@ -1,72 +1,78 @@
-package helpers
+package helpers_test
 
 import (
-	"net"
 	"testing"
 
+	"wlbot/internal/helpers"
 	"wlbot/internal/xerrors"
 
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFindIP4(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
-		name       string
-		text       string
-		wantIp4    net.IP
-		withSubnet bool
-		wantErr    error
+		name     string
+		text     string
+		wantIP4  string
+		wantCIDR string
+		wantErr  error
 	}{
 		{
-			name:       "correct ip4",
-			text:       "Hello, please add 85.249.35.209 in the white list.",
-			wantIp4:    net.ParseIP("85.249.35.209"),
-			withSubnet: false,
-			wantErr:    nil,
+			name:     "correct ip4",
+			text:     "Hello, please add 85.249.35.209 in the white list.",
+			wantIP4:  "85.249.35.209",
+			wantCIDR: "",
+			wantErr:  nil,
 		},
 		{
-			name:       "correct ip4 with new line",
-			text:       "Hello, please add\n85.249.35.209\nin the white list.",
-			wantIp4:    net.ParseIP("85.249.35.209"),
-			withSubnet: false,
-			wantErr:    nil,
+			name:     "correct ip4 with new line",
+			text:     "Hello, please add\n85.249.35.209\nin the white list.",
+			wantIP4:  "85.249.35.209",
+			wantCIDR: "",
+			wantErr:  nil,
 		},
 		{
-			name:       "correct ip4 with subnet",
-			text:       "Hello, please add 85.249.35.0/24 in the white list.",
-			wantIp4:    net.ParseIP("85.249.35.0"),
-			withSubnet: true,
-			wantErr:    nil,
+			name:     "correct ip4 with subnet",
+			text:     "Hello, please add 85.249.35.0/24 in the white list.",
+			wantIP4:  "85.249.35.0",
+			wantCIDR: "85.249.35.0/24",
+			wantErr:  nil,
 		},
 		{
-			name:       "zeros",
-			text:       "Hello, please add 0.0.0.0 in the white list.",
-			wantIp4:    nil,
-			withSubnet: false,
-			wantErr:    xerrors.ErrNotFound,
+			name:     "zeros",
+			text:     "Hello, please add 0.0.0.0 in the white list.",
+			wantIP4:  "",
+			wantCIDR: "",
+			wantErr:  xerrors.ErrNotFound,
 		},
 		{
-			name:       "empty text",
-			text:       "",
-			wantIp4:    nil,
-			withSubnet: false,
-			wantErr:    xerrors.ErrNotFound,
+			name:     "empty text",
+			text:     "",
+			wantIP4:  "",
+			wantCIDR: "",
+			wantErr:  xerrors.ErrNotFound,
 		},
 		{
-			name:       "text without ip",
-			text:       "text without ip",
-			wantIp4:    nil,
-			withSubnet: false,
-			wantErr:    xerrors.ErrNotFound,
+			name:     "text without ip",
+			text:     "text without ip",
+			wantIP4:  "",
+			wantCIDR: "",
+			wantErr:  xerrors.ErrNotFound,
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotIp4, gotWithCIDR, err := FindIP(tt.text)
+		tt := tt
 
-			require.Equal(t, tt.wantIp4.String(), gotIp4.String())
-			require.Equal(t, tt.withSubnet, gotWithCIDR != nil)
-			require.ErrorIs(t, err, tt.wantErr)
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			gotIP4, gotCIDR, err := helpers.FindIP(tt.text)
+
+			assert.Equal(t, tt.wantIP4, gotIP4, "ip4")
+			assert.Equal(t, tt.wantCIDR, gotCIDR, "cidr")
+			assert.ErrorIs(t, err, tt.wantErr, "err")
 		})
 	}
 }

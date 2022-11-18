@@ -12,8 +12,8 @@ var findIPRegexp = regexp.MustCompile(`[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]{1,3}\.
 
 var findIPWithCIDRRegexp = regexp.MustCompile(`[1-9][0-9]{0,2}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,3}`)
 
-func FindIP(text string) (ip net.IP, ipNet *net.IPNet, err error) {
-	defer func() { err = xerrors.Wrap(err, "failed to find ip in text") }()
+func FindIP(text string) (ip string, ipNet string, err error) {
+	defer func() { err = xerrors.Wrap(err, "failed to find ip4 in text") }()
 
 	foundIP := findIPWithCIDRRegexp.FindString(text)
 	if foundIP == "" {
@@ -22,23 +22,24 @@ func FindIP(text string) (ip net.IP, ipNet *net.IPNet, err error) {
 
 	foundIP = strings.TrimSpace(foundIP)
 
-	ip, ipNet, err = net.ParseCIDR(foundIP)
+	ip4, cidr, err := net.ParseCIDR(foundIP)
 	if err != nil {
 		err = nil
 
-		ip = net.ParseIP(foundIP)
-		if ip == nil {
-			err = xerrors.ErrNotFound
-			return
+		ip4 = net.ParseIP(foundIP)
+		if ip4 == nil {
+			return "", "", xerrors.ErrNotFound
 		}
 	}
 
-	if ip.IsUnspecified() || ip.IsPrivate() {
-		err = xerrors.ErrNotFound
-		return
+	if ip4.IsUnspecified() || ip4.IsPrivate() {
+		return "", "", xerrors.ErrNotFound
 	}
 
-	foundIP = ip.String()
+	cidrStr := ""
+	if cidr != nil {
+		cidrStr = cidr.String()
+	}
 
-	return
+	return ip4.String(), cidrStr, nil
 }

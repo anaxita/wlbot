@@ -1,9 +1,10 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strings"
+
+	"wlbot/internal/xerrors"
 
 	"gopkg.in/yaml.v3"
 )
@@ -63,49 +64,52 @@ func load(configPath string) (cfg App, err error) {
 
 // validate checks the configuration for correctness.
 func (a App) validate() error {
-	mapErrs := make(map[string]string)
+	const empty = "empty"
+
+	mapErrs := make(map[string]struct{})
 
 	if a.HTTPPort == "" {
-		mapErrs["http_port"] = "empty"
+		mapErrs["http_port"] = struct{}{}
 	}
 
 	if a.TGBotToken == "" {
-		mapErrs["tg_bot_token"] = "empty"
+		mapErrs["tg_bot_token"] = struct{}{}
 	}
 
 	if a.LogFile == "" {
-		mapErrs["logfile"] = "empty"
+		mapErrs["logfile"] = struct{}{}
 	}
 
-	// if len(a.MikroTiks) == 0 {
-	// 	mapErrs["mikrotiks"] = "empty"
-	// }
-	//
-	// if len(a.ChatWLs) == 0 {
-	// 	mapErrs["chat_wls"] = "empty"
-	// }
-	//
-	// if len(a.AdminChats) == 0 {
-	// 	mapErrs["admin_chats"] = "empty"
-	// }
-	//
-	// if len(a.AdminUsers) == 0 {
-	// 	mapErrs["admin_users"] = "empty"
-	// }
+	if len(a.MikroTiks) == 0 {
+		mapErrs["mikrotiks"] = struct{}{}
+	}
+
+	if len(a.ChatWLs) == 0 {
+		mapErrs["chat_wls"] = struct{}{}
+	}
+
+	if len(a.AdminChats) == 0 {
+		mapErrs["admin_chats"] = struct{}{}
+	}
+
+	if len(a.AdminUsers) == 0 {
+		mapErrs["admin_users"] = struct{}{}
+	}
 
 	if len(mapErrs) > 0 {
 		var b strings.Builder
+
 		b.Grow(len(mapErrs))
 
-		for k, v := range mapErrs {
+		for k := range mapErrs {
 			b.WriteString("\n")
 			b.WriteString(k)
 			b.WriteString(": ")
-			b.WriteString(v)
+			b.WriteString(empty)
 			b.WriteString("; ")
 		}
 
-		return fmt.Errorf("validation failed: " + b.String())
+		return xerrors.Wrap(xerrors.ErrValidate, b.String())
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"fmt"
-	"net"
 
 	"wlbot/internal/helpers"
 
@@ -18,14 +17,15 @@ func (h *Handler) message(c tele.Context) error {
 	return nil
 }
 
-func (h *Handler) askToAddIP(c tele.Context, ip4 net.IP, subnet *net.IPNet) error {
-	ip := ip4.String()
-	if subnet != nil {
+func (h *Handler) askToAddIP(c tele.Context, ip4 string, subnet string) error {
+	ip := ip4
+
+	if subnet != "" {
 		if !h.auth.IsAdmin(c.Chat().ID, c.Sender().Username) {
-			return nil
+			return c.Send("Только администраторы могут добавлять подсети.")
 		}
 
-		ip = subnet.String()
+		ip = subnet
 	}
 
 	menu.Inline(

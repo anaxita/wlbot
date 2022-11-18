@@ -5,3 +5,6 @@ win-build:
 
 run:
 	go run -ldflags="-X 'wlbot/pkg/version.V=${VERSION}'" cmd/main.go
+
+lint:
+	docker run --rm -v $(shell pwd):/app -w /app golangci/golangci-lint:v1.50.1 golangci-lint run

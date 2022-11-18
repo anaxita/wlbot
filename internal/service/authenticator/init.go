@@ -9,8 +9,8 @@ type Service struct {
 
 func New(adminChats []int64, adminUsers []string) *Service {
 	return &Service{
-		adminChats: helpers.ToMap(adminChats),
-		adminUsers: helpers.ToMap(adminUsers),
+		adminChats: helpers.SliceToMap(adminChats),
+		adminUsers: helpers.SliceToMap(adminUsers),
 	}
 }
 
@@ -20,10 +20,12 @@ func (s *Service) IsAdmin(chatID int64, username string) bool {
 
 func (s *Service) IsAdminChat(chatID int64) bool {
 	_, ok := s.adminChats[chatID]
+
 	return ok
 }
 
 func (s *Service) IsAdminUser(username string) bool {
 	_, ok := s.adminUsers[username]
+
 	return ok
 }

@@ -40,6 +40,7 @@ func (s *Service) AddIPToDefaultMikrotiks(ctx context.Context, ip, comment strin
 		)
 
 		isDynamic, err := s.device.FindIP(ctx, m, m.DefaultWL, ip)
+
 		switch {
 		case err == nil:
 			if isDynamic {
@@ -97,28 +98,11 @@ func (s *Service) addIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatW
 		}
 
 		isDynamic, err := s.device.FindIP(ctx, m, v.MikrotikWL, ip)
-		switch {
-		case err == nil:
-			if isDynamic {
-				s.l.Debugw("found dynamic ip, try to remove", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
-
-				err = s.device.RemoveIP(ctx, m, v.MikrotikWL, ip)
-				if err != nil {
-					return err
-				}
-
-				s.l.Debugw("ip successfully removed", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
-			}
-
-			s.l.Debugw("try to add ip to default wl", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
-
-			err = s.device.AddIPToCustomWL(ctx, m, v.MikrotikWL, ip, comment)
-			if err != nil {
+		if err != nil {
+			if !errors.Is(err, xerrors.ErrNotFound) {
 				return err
 			}
 
-			s.l.Debugw("ip successfully added", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
-		case errors.Is(err, xerrors.ErrNotFound):
 			s.l.Debugw("ip is not found, try to add", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
 
 			err = s.device.AddIPToCustomWL(ctx, m, v.MikrotikWL, ip, comment)
@@ -127,9 +111,27 @@ func (s *Service) addIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatW
 			}
 
 			s.l.Debugw("ip successfully added", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
-		default:
+		}
+
+		if isDynamic {
+			s.l.Debugw("found dynamic ip, try to remove", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
+
+			err = s.device.RemoveIP(ctx, m, v.MikrotikWL, ip)
+			if err != nil {
+				return err
+			}
+
+			s.l.Debugw("ip successfully removed", "mikrotik_id", v.MikrotikID, "wl", v.MikrotikWL, "ip", ip)
+		}
+
+		s.l.Debugw("try to add ip to default wl", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
+
+		err = s.device.AddIPToCustomWL(ctx, m, v.MikrotikWL, ip, comment)
+		if err != nil {
 			return err
 		}
+
+		s.l.Debugw("ip successfully added", "mikrotik_id", m.ID, "wl", m.DefaultWL, "ip", ip)
 	}
 
 	if addToDefault {

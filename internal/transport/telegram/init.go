@@ -4,10 +4,13 @@ import (
 	"wlbot/internal/service/authenticator"
 	"wlbot/internal/service/mikrotik"
 
+	"go.uber.org/zap"
 	"gopkg.in/telebot.v3"
 )
 
 type Handler struct {
+	l *zap.SugaredLogger
+
 	debug bool
 
 	bot      *telebot.Bot
@@ -15,8 +18,15 @@ type Handler struct {
 	auth     *authenticator.Service
 }
 
-func New(debug bool, bot *telebot.Bot, mikrotik *mikrotik.Service, auth *authenticator.Service) *Handler {
+func New(
+	l *zap.SugaredLogger,
+	debug bool,
+	bot *telebot.Bot,
+	mikrotik *mikrotik.Service,
+	auth *authenticator.Service,
+) *Handler {
 	return &Handler{
+		l:        l,
 		debug:    debug,
 		bot:      bot,
 		mikrotik: mikrotik,
