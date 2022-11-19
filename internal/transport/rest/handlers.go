@@ -17,6 +17,7 @@ func (s *Server) SendHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
+
 			return
 		}
 
@@ -25,6 +26,7 @@ func (s *Server) SendHandler() http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+
 			return
 		}
 
@@ -35,6 +37,7 @@ func (s *Server) SendHandler() http.Handler {
 			}
 
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+
 			return
 		}
 	})
@@ -50,6 +53,7 @@ func (s *Server) AddIPHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
+
 			return
 		}
 
@@ -58,18 +62,16 @@ func (s *Server) AddIPHandler() http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+
 			return
 		}
 
-		err = s.mikrotik.AddIPToDefaultMikrotiks(
-			r.Context(),
-			req.IP4,
-			helpers.TranslitRuToEN(req.UserName+" | "+req.Comment),
-		)
+		err = s.mikrotik.AddIPToDefaultMikrotiks(req.IP4, helpers.TranslitRuToEN(req.UserName+" | "+req.Comment))
 		if err != nil {
 			s.l.Error("failed to add ip to mikrotik", zap.Error(err))
 
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+
 			return
 		}
 	})

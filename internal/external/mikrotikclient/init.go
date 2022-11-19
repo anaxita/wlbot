@@ -1,8 +1,6 @@
 package mikrotikclient
 
 import (
-	"context"
-	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -21,38 +19,16 @@ type Client struct {
 
 func New() *Client {
 	return &Client{
+		mu:    sync.Mutex{},
 		conns: make(map[int64]*routeros.Client),
 	}
-}
-
-func (c *Client) FindIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (isDynamic bool, err error) {
-	return true, nil // TODO replace with real implementation
-
-	// client, err := c.dial(m)
-	// if err != nil {
-	// 	return
-	// }
-	//
-	// r, err := client.Run(
-	// 	"/ip/firewall/address-list/print",
-	// 	"=list="+wl,
-	// 	"=address="+ip,
-	// )
-	// if err != nil {
-	// 	return
-	// }
-	//
-	// dynamicField := r.Re[0].Map["is_dynamic"]
-	//
-	// isDynamic, _ = strconv.ParseBool(dynamicField)
-	//
-	// return
 }
 
 func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 	errs := make([]string, 0, len(devices))
 
 	var wg sync.WaitGroup
+
 	wg.Add(len(devices))
 
 	for _, v := range devices {
@@ -62,10 +38,12 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 			c.mu.Lock()
 			defer c.mu.Unlock()
 
-			client, err := routeros.DialTimeout(v.Address, v.Login, v.Password, time.Second*3)
-			if err != nil {
+			const timeout = time.Second * 3
 
+			client, err := routeros.DialTimeout(v.Address, v.Login, v.Password, timeout)
+			if err != nil {
 				errs = append(errs, err.Error())
+
 				return
 			}
 
@@ -76,28 +54,28 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 	wg.Wait()
 
 	if len(errs) > 0 {
-		return fmt.Errorf("health check failed: %s", strings.Join(errs, "; "))
+		return xerrors.Wrap(xerrors.ErrHealthCheck, strings.Join(errs, "; "))
 	}
 
 	return nil
 }
 
-func (c *Client) AddIP(ctx context.Context, m entity.Mikrotik, ip, comment string) error {
-	return c.AddIPToCustomWL(ctx, m, m.DefaultWL, ip, comment)
+func (c *Client) AddIP(m entity.Mikrotik, ip, comment string) error {
+	return c.AddIPToCustomWL(m, m.DefaultWL, ip, comment)
 }
 
-func (c *Client) AddIPToCustomWL(ctx context.Context, m entity.Mikrotik, wl, ip, comment string) error {
+func (c *Client) AddIPToCustomWL(m entity.Mikrotik, wl, ip, comment string) error {
 	client, err := c.dial(m)
 	if err != nil {
 		return err
 	}
 
-	_, err = client.Run("/ip/firewall/address-list/add", "=list="+wl, "=address="+ip, "=comment="+comment+"")
+	_, err = client.Run("/ip/firewall/address-list/add", "=list="+wl, "=address="+ip, "=comment=\""+comment+"\"")
 
 	return err
 }
 
-func (c *Client) RemoveIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (err error) {
+func (c *Client) RemoveIP(m entity.Mikrotik, wl string, ip string) (err error) {
 	client, err := c.dial(m)
 	if err != nil {
 		return
@@ -136,7 +114,9 @@ func (c *Client) dial(m entity.Mikrotik) (*routeros.Client, error) {
 		return client, nil
 	}
 
-	client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, time.Second*3)
+	const timeout = time.Second * 3
+
+	client, err := routeros.DialTimeout(m.Address, m.Login, m.Password, timeout)
 	if err != nil {
 		return nil, err
 	}

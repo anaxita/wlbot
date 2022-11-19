@@ -4,30 +4,32 @@ import (
 	"context"
 
 	"wlbot/internal/entity"
-
-	"go.uber.org/zap"
 )
 
 type Repository interface {
-	ChatWLs(ctx context.Context, chatID int64) ([]entity.ChatWL, error)
-	DefaultMikroTiks(ctx context.Context) ([]entity.Mikrotik, error)
+	ChatWLs(ctx context.Context, chatID int64) []entity.ChatWL
+	DefaultMikroTiks() []entity.Mikrotik
 	MikroTikByID(ctx context.Context, id int64) (entity.Mikrotik, error)
 }
 
 type Device interface {
-	FindIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (isDynamic bool, err error)
-	AddIP(ctx context.Context, m entity.Mikrotik, ip, comment string) error
-	AddIPToCustomWL(ctx context.Context, m entity.Mikrotik, wl, ip, comment string) error
-	RemoveIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) error
+	AddIP(m entity.Mikrotik, ip, comment string) error
+	AddIPToCustomWL(m entity.Mikrotik, wl, ip, comment string) error
+	RemoveIP(m entity.Mikrotik, wl string, ip string) error
+}
+
+// Provider provides mikrotik service methods.
+type Provider interface {
+	AddIPFromChat(ctx context.Context, chatID int64, ip string, comment string) (err error)
+	AddIPToDefaultMikrotiks(ip, comment string) (err error)
+	AddIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatWL, ip, comment string) (err error)
 }
 
 type Service struct {
-	l *zap.SugaredLogger
-
 	repo   Repository
 	device Device
 }
 
-func New(l *zap.SugaredLogger, repo Repository, device Device) *Service {
-	return &Service{l: l, repo: repo, device: device}
+func New(repo Repository, device Device) *Service {
+	return &Service{repo: repo, device: device}
 }
