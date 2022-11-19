@@ -1,7 +1,7 @@
 run:
   timeout: 1m
   issues-exit-code: 2
-  tests: true
+  tests: false
   go: '1.19'
 
 output:
@@ -19,6 +19,8 @@ linters:
     - varnamelen
     - gochecknoglobals
     - nonamedreturns
+    - exhaustruct
+    - exhaustivestruct
 
 linters-settings:
   tagliatelle:

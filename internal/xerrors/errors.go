@@ -11,6 +11,7 @@ var (
 	ErrWrongInput  = errors.New("wrong input")
 	ErrSendMessage = errors.New("send message")
 	ErrHealthCheck = errors.New("health check")
+	ErrMikrotik    = errors.New("mikrotik")
 )
 
 // Wrap wraps text by err. If err is empty returns nil.

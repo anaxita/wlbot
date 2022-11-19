@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -35,24 +36,15 @@ func main() {
 	}
 
 	defer func(l *zap.SugaredLogger) {
-		err := l.Sync()
-		if err != nil {
+		if err := l.Sync(); err != nil {
 			log.Panic("sync logger: ", err)
 		}
 	}(l)
 
 	// telegram bot
 	bot, err := telebot.NewBot(telebot.Settings{
-		URL:         telebot.DefaultApiURL,
-		Token:       cfg.TGBotToken,
-		Updates:     0,
-		Poller:      nil,
-		Synchronous: false,
-		Verbose:     false,
-		ParseMode:   telebot.ModeDefault,
-		OnError:     func(err error, c telebot.Context) { l.Error(zap.Error(err)) },
-		Client:      nil,
-		Offline:     false,
+		Token:   cfg.TGBotToken,
+		OnError: func(err error, c telebot.Context) { l.Error(zap.Error(err)) },
 	})
 	if err != nil {
 		l.Panic(err)
@@ -73,7 +65,7 @@ func main() {
 	l.Debug("mikrotik devices health check: ok")
 
 	// internal services
-	mkr := mikrotik.New(l, repo, mkrClient)
+	mkr := mikrotik.NewLogged(l, mikrotik.New(repo, mkrClient))
 	auth := authenticator.New(cfg.AdminChats, cfg.AdminUsers)
 	notif := notificator.New(l, repo, bot)
 
@@ -83,27 +75,28 @@ func main() {
 	srv := rest.NewServer(l, cfg.HTTPPort, notif, mkr)
 
 	doneCh := make(chan struct{})
-
-	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt)
-		<-sigint
-
-		bot.Stop()
-		l.Info("Telegram bot stopped")
-
-		if err := srv.Shutdown(context.Background()); err != nil {
-			l.Error("HTTP server shutdown failed:", zap.Error(err))
-		}
-
-		close(doneCh)
-	}()
+	go handleSignals(l, doneCh, bot, srv)
 
 	l.Debug("HTTP server started at:", cfg.HTTPPort)
 
-	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+	if err := srv.ListenAndServe(); errors.Is(err, http.ErrServerClosed) {
 		l.Fatal("HTTP server listen and serve failed:", zap.Error(err))
 	}
 
 	<-doneCh
+}
+
+func handleSignals(l *zap.SugaredLogger, doneCh chan struct{}, bot *telebot.Bot, srv *rest.Server) {
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt)
+	<-sigint
+
+	bot.Stop()
+	l.Info("Telegram bot stopped")
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		l.Error("HTTP server shutdown failed:", zap.Error(err))
+	}
+
+	close(doneCh)
 }

@@ -66,11 +66,7 @@ func (s *Server) AddIPHandler() http.Handler {
 			return
 		}
 
-		err = s.mikrotik.AddIPToDefaultMikrotiks(
-			r.Context(),
-			req.IP4,
-			helpers.TranslitRuToEN(req.UserName+" | "+req.Comment),
-		)
+		err = s.mikrotik.AddIPToDefaultMikrotiks(req.IP4, helpers.TranslitRuToEN(req.UserName+" | "+req.Comment))
 		if err != nil {
 			s.l.Error("failed to add ip to mikrotik", zap.Error(err))
 

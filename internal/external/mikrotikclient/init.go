@@ -1,7 +1,6 @@
 package mikrotikclient
 
 import (
-	"context"
 	"strings"
 	"sync"
 	"time"
@@ -23,30 +22,6 @@ func New() *Client {
 		mu:    sync.Mutex{},
 		conns: make(map[int64]*routeros.Client),
 	}
-}
-
-func (c *Client) FindIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (isDynamic bool, err error) {
-	return true, nil // TODO: replace with real implementation
-
-	// client, err := c.dial(m)
-	// if err != nil {
-	// 	return
-	// }
-	//
-	// r, err := client.Run(
-	// 	"/ip/firewall/address-list/print",
-	// 	"=list="+wl,
-	// 	"=address="+ip,
-	// )
-	// if err != nil {
-	// 	return
-	// }
-	//
-	// dynamicField := r.Re[0].Map["is_dynamic"]
-	//
-	// isDynamic, _ = strconv.ParseBool(dynamicField)
-	//
-	// return
 }
 
 func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
@@ -85,11 +60,11 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 	return nil
 }
 
-func (c *Client) AddIP(ctx context.Context, m entity.Mikrotik, ip, comment string) error {
-	return c.AddIPToCustomWL(ctx, m, m.DefaultWL, ip, comment)
+func (c *Client) AddIP(m entity.Mikrotik, ip, comment string) error {
+	return c.AddIPToCustomWL(m, m.DefaultWL, ip, comment)
 }
 
-func (c *Client) AddIPToCustomWL(ctx context.Context, m entity.Mikrotik, wl, ip, comment string) error {
+func (c *Client) AddIPToCustomWL(m entity.Mikrotik, wl, ip, comment string) error {
 	client, err := c.dial(m)
 	if err != nil {
 		return err
@@ -100,7 +75,7 @@ func (c *Client) AddIPToCustomWL(ctx context.Context, m entity.Mikrotik, wl, ip,
 	return err
 }
 
-func (c *Client) RemoveIP(ctx context.Context, m entity.Mikrotik, wl string, ip string) (err error) {
+func (c *Client) RemoveIP(m entity.Mikrotik, wl string, ip string) (err error) {
 	client, err := c.dial(m)
 	if err != nil {
 		return

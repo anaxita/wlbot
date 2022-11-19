@@ -37,7 +37,7 @@ func New(devices []config.Mikrotik, chatWLs []config.ChatWL, adminChatIDs []int6
 	return &r
 }
 
-func (r *R) ChatWLs(ctx context.Context, chatID int64) ([]entity.ChatWL, error) {
+func (r *R) ChatWLs(ctx context.Context, chatID int64) []entity.ChatWL {
 	var chats []entity.ChatWL
 
 	for _, c := range r.chatWLs {
@@ -46,11 +46,11 @@ func (r *R) ChatWLs(ctx context.Context, chatID int64) ([]entity.ChatWL, error) 
 		}
 	}
 
-	return chats, nil
+	return chats
 }
 
-func (r *R) DefaultMikroTiks(ctx context.Context) ([]entity.Mikrotik, error) {
-	return r.defaultDevices, nil
+func (r *R) DefaultMikroTiks() []entity.Mikrotik {
+	return r.defaultDevices
 }
 
 func (r *R) MikroTikByID(ctx context.Context, id int64) (entity.Mikrotik, error) {

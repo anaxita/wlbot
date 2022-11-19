@@ -14,11 +14,11 @@ type Server struct {
 	l *zap.SugaredLogger
 
 	*http.Server
-	mikrotik    *mikrotik.Service
+	mikrotik    mikrotik.Provider
 	notificator *notificator.Service
 }
 
-func NewServer(l *zap.SugaredLogger, port string, n *notificator.Service, m *mikrotik.Service) *Server {
+func NewServer(l *zap.SugaredLogger, port string, n *notificator.Service, m mikrotik.Provider) *Server {
 	const readTimeout = time.Second * 5
 
 	httpSrv := &http.Server{
