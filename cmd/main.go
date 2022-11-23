@@ -70,7 +70,8 @@ func main() {
 	notif := notificator.New(l, repo, bot)
 
 	// api
-	go telegram.New(l, cfg.Debug, bot, mkr, auth).Start()
+	tgMw := telegram.NewMiddleware(l, auth)
+	go telegram.New(l, cfg.Debug, tgMw, bot, mkr, auth).Start()
 
 	srv := rest.NewServer(l, cfg.HTTPPort, notif, mkr)
 
