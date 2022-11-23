@@ -9,16 +9,19 @@ import (
 	"wlbot/internal/service/config"
 	"wlbot/internal/xerrors"
 
+	"go.uber.org/zap"
 	"gopkg.in/routeros.v2"
 )
 
 type Client struct {
+	l     *zap.SugaredLogger
 	mu    sync.Mutex
 	conns map[int64]*routeros.Client
 }
 
-func New() *Client {
+func New(l *zap.SugaredLogger) *Client {
 	return &Client{
+		l:     l,
 		mu:    sync.Mutex{},
 		conns: make(map[int64]*routeros.Client),
 	}
@@ -35,6 +38,8 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 		go func(v config.Mikrotik) {
 			defer wg.Done()
 
+			c.l.Info("Checking connection to ", v.Address)
+
 			c.mu.Lock()
 			defer c.mu.Unlock()
 
@@ -46,6 +51,8 @@ func (c *Client) HealthCheck(devices ...config.Mikrotik) error {
 
 				return
 			}
+
+			c.l.Info("Connection to ", v.Address, " is OK")
 
 			c.conns[v.ID] = client
 		}(v)
