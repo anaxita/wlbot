@@ -1,6 +1,9 @@
 package logging
 
 import (
+	"path"
+	"time"
+
 	"wlbot/internal/xerrors"
 	"wlbot/pkg/version"
 
@@ -9,6 +12,10 @@ import (
 )
 
 func New(debug bool, logfile string) (*zap.SugaredLogger, error) {
+	logFilePrefix := time.Now().Format("2006-01-02-15-04-05")
+	dir, file := path.Split(logfile)
+	logfile = path.Join(dir, logFilePrefix+"-"+file)
+
 	var (
 		zapLevel   = zap.InfoLevel
 		encodingAs = "json"
