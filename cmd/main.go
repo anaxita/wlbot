@@ -45,8 +45,9 @@ func main() {
 	l.Info("Starting telegram bot...")
 
 	bot, err := telebot.NewBot(telebot.Settings{
-		Token:   cfg.TGBotToken,
-		OnError: func(err error, c telebot.Context) { l.Error(zap.Error(err)) },
+		Token:     cfg.TGBotToken,
+		ParseMode: telebot.ModeMarkdownV2,
+		OnError:   func(err error, c telebot.Context) { l.Error(zap.Error(err)) },
 	})
 	if err != nil {
 		l.Fatal(err)
@@ -61,15 +62,15 @@ func main() {
 	mkrClient := mikrotikclient.New(l)
 
 	// check mikrotik devices health
-	err = mkrClient.HealthCheck(cfg.MikroTiks...)
-	if err != nil {
-		l.Fatal(err)
-	}
+	// err = mkrClient.HealthCheck(cfg.MikroTiks...)
+	// if err != nil {
+	// 	l.Fatal(err)
+	// }
 
 	l.Debug("mikrotik devices health check: ok")
 
 	// internal services
-	mkr := mikrotik.NewLogged(l, mikrotik.New(repo, mkrClient))
+	mkr := mikrotik.New(repo, mkrClient)
 	auth := authenticator.New(cfg.AdminChats, cfg.AdminUsers)
 	notif := notificator.New(l, repo, bot)
 
@@ -84,9 +85,11 @@ func main() {
 
 	l.Debug("HTTP server started at:", cfg.HTTPPort)
 
-	if err := srv.ListenAndServe(); errors.Is(err, http.ErrServerClosed) {
+	if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		l.Fatal("HTTP server listen and serve failed:", zap.Error(err))
 	}
+
+	l.Info("HTTP server stopped")
 
 	<-doneCh
 }

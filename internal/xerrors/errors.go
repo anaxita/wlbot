@@ -6,12 +6,13 @@ import (
 )
 
 var (
-	ErrValidate    = errors.New("validation failed")
-	ErrNotFound    = errors.New("not found")
-	ErrWrongInput  = errors.New("wrong input")
-	ErrSendMessage = errors.New("send message")
-	ErrHealthCheck = errors.New("health check")
-	ErrMikrotik    = errors.New("mikrotik")
+	ErrValidate      = errors.New("validation failed")
+	ErrNotFound      = errors.New("not found")
+	ErrWrongInput    = errors.New("wrong input")
+	ErrSendMessage   = errors.New("send message")
+	ErrHealthCheck   = errors.New("health check")
+	ErrMikrotik      = errors.New("mikrotik")
+	ErrAlreadyExists = errors.New("already exists")
 )
 
 // Wrap wraps text by err. If err is empty returns nil.

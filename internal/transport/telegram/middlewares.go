@@ -25,12 +25,3 @@ func (m *Middleware) disallowPrivateMessages(next telebot.HandlerFunc) telebot.H
 		return next(c)
 	}
 }
-
-func (m *Middleware) disallowAddToGroup(next telebot.HandlerFunc) telebot.HandlerFunc {
-	return func(c telebot.Context) error {
-
-		// TODO check if user is admin, if not - leave the group
-
-		return next(c)
-	}
-}

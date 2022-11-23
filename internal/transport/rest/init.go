@@ -51,8 +51,8 @@ func NewServer(l *zap.SugaredLogger, port string, n *notificator.Service, m mikr
 
 func (s *Server) setRoutes() {
 	r := http.NewServeMux()
-	r.HandleFunc("/send", s.CorsHandler(s.SendHandler()))
-	r.HandleFunc("/wl", s.CorsHandler(s.AddIPHandler()))
+	r.HandleFunc("/send", s.Cors(s.SendHandler()))
+	r.HandleFunc("/wl", s.Cors(s.AddIPHandler()))
 
 	s.Handler = r
 }
