@@ -57,7 +57,7 @@ func (s *Service) AddIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatW
 		}
 
 		err = s.device.AddIPToCustomWL(m, v.MikrotikWL, ip, comment)
-		if err != nil {
+		if err != nil && !errors.Is(err, xerrors.ErrAlreadyExists) {
 			return fmt.Errorf("%w: add ip failed: %s; mikrotik_id = %d; wl=%s; ip=%s",
 				xerrors.ErrMikrotik, err, m.ID, v.MikrotikWL, ip)
 		}
