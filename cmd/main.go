@@ -46,7 +46,7 @@ func main() {
 
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token:     cfg.TGBotToken,
-		ParseMode: telebot.ModeMarkdownV2,
+		ParseMode: telebot.ModeMarkdown,
 		OnError:   func(err error, c telebot.Context) { l.Error(zap.Error(err)) },
 	})
 	if err != nil {
@@ -62,10 +62,10 @@ func main() {
 	mkrClient := mikrotikclient.New(l)
 
 	// check mikrotik devices health
-	// err = mkrClient.HealthCheck(cfg.MikroTiks...)
-	// if err != nil {
-	// 	l.Fatal(err)
-	// }
+	err = mkrClient.HealthCheck(cfg.MikroTiks...)
+	if err != nil {
+		l.Fatal(err)
+	}
 
 	l.Debug("mikrotik devices health check: ok")
 
