@@ -32,34 +32,38 @@ func main() {
 
 	l, err := logging.New(cfg.Debug, cfg.LogFile)
 	if err != nil {
-		log.Panic("init logger: ", err)
+		log.Fatal("init logger: ", err)
 	}
 
 	defer func(l *zap.SugaredLogger) {
 		if err := l.Sync(); err != nil {
-			log.Panic("sync logger: ", err)
+			log.Println("sync logger: ", err)
 		}
 	}(l)
 
 	// telegram bot
+	l.Info("Starting telegram bot...")
+
 	bot, err := telebot.NewBot(telebot.Settings{
 		Token:   cfg.TGBotToken,
 		OnError: func(err error, c telebot.Context) { l.Error(zap.Error(err)) },
 	})
 	if err != nil {
-		l.Panic(err)
+		l.Fatal(err)
 	}
+
+	l.Info("Telegram bot started")
 
 	// repository
 	repo := repository.New(cfg.MikroTiks, cfg.ChatWLs, cfg.AdminChats)
 
 	// external services
-	mkrClient := mikrotikclient.New()
+	mkrClient := mikrotikclient.New(l)
 
 	// check mikrotik devices health
 	err = mkrClient.HealthCheck(cfg.MikroTiks...)
 	if err != nil {
-		l.Panic(err)
+		l.Fatal(err)
 	}
 
 	l.Debug("mikrotik devices health check: ok")
@@ -70,7 +74,8 @@ func main() {
 	notif := notificator.New(l, repo, bot)
 
 	// api
-	go telegram.New(l, cfg.Debug, bot, mkr, auth).Start()
+	tgMw := telegram.NewMiddleware(l, auth)
+	go telegram.New(l, cfg.Debug, tgMw, bot, mkr, auth).Start()
 
 	srv := rest.NewServer(l, cfg.HTTPPort, notif, mkr)
 

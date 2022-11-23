@@ -13,6 +13,8 @@ type Handler struct {
 
 	debug bool
 
+	mw *Middleware
+
 	bot      *telebot.Bot
 	mikrotik mikrotik.Provider
 	auth     *authenticator.Service
@@ -21,6 +23,7 @@ type Handler struct {
 func New(
 	l *zap.SugaredLogger,
 	debug bool,
+	mw *Middleware,
 	bot *telebot.Bot,
 	mikrotik mikrotik.Provider,
 	auth *authenticator.Service,
@@ -28,6 +31,7 @@ func New(
 	return &Handler{
 		l:        l,
 		debug:    debug,
+		mw:       mw,
 		bot:      bot,
 		mikrotik: mikrotik,
 		auth:     auth,
