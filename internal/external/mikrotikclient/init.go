@@ -78,8 +78,15 @@ func (c *Client) AddIPToCustomWL(m entity.Mikrotik, wl, ip, comment string) erro
 	}
 
 	_, err = client.Run("/ip/firewall/address-list/add", "=list="+wl, "=address="+ip, "=comment=\""+comment+"\"")
+	if err != nil {
+		if strings.Contains(err.Error(), "already have such entry") {
+			return xerrors.ErrAlreadyExists
+		}
 
-	return err
+		return err
+	}
+
+	return nil
 }
 
 func (c *Client) RemoveIP(m entity.Mikrotik, wl string, ip string) (err error) {

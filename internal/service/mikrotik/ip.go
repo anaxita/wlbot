@@ -23,14 +23,14 @@ func (s *Service) AddIPToDefaultMikrotiks(ip, comment string) error {
 	for _, m := range s.repo.DefaultMikroTiks() {
 		err := s.device.RemoveIP(m, m.DefaultWL, ip)
 		if err != nil && !errors.Is(err, xerrors.ErrNotFound) {
-			return fmt.Errorf("%w: remove ip failed: %s; mikrotik_id = %d; wl=%s",
-				xerrors.ErrMikrotik, err, m.ID, m.DefaultWL)
+			return fmt.Errorf("%w: remove ip failed: %s; mikrotik_id = %d; wl=%s; ip=%s",
+				xerrors.ErrMikrotik, err, m.ID, m.DefaultWL, ip)
 		}
 
 		err = s.device.AddIP(m, ip, comment)
-		if err != nil {
-			return fmt.Errorf("%w: add ip failed: %s; mikrotik_id = %d; wl=%s",
-				xerrors.ErrMikrotik, err, m.ID, m.DefaultWL)
+		if err != nil && !errors.Is(err, xerrors.ErrAlreadyExists) {
+			return fmt.Errorf("%w: add ip failed: %s; mikrotik_id = %d; wl=%s; ip=%s",
+				xerrors.ErrMikrotik, err, m.ID, m.DefaultWL, ip)
 		}
 	}
 
@@ -52,14 +52,14 @@ func (s *Service) AddIPToCustomMikrotiks(ctx context.Context, wls []entity.ChatW
 
 		err = s.device.RemoveIP(m, v.MikrotikWL, ip)
 		if err != nil && !errors.Is(err, xerrors.ErrNotFound) {
-			return fmt.Errorf("%w: remove ip failed: %s; mikrotik_id = %d; wl=%s",
-				xerrors.ErrMikrotik, err, m.ID, v.MikrotikWL)
+			return fmt.Errorf("%w: remove ip failed: %s; mikrotik_id = %d; wl=%s; ip=%s",
+				xerrors.ErrMikrotik, err, m.ID, v.MikrotikWL, ip)
 		}
 
 		err = s.device.AddIPToCustomWL(m, v.MikrotikWL, ip, comment)
 		if err != nil {
-			return fmt.Errorf("%w: add ip failed: %s; mikrotik_id = %d; wl=%s",
-				xerrors.ErrMikrotik, err, m.ID, v.MikrotikWL)
+			return fmt.Errorf("%w: add ip failed: %s; mikrotik_id = %d; wl=%s; ip=%s",
+				xerrors.ErrMikrotik, err, m.ID, v.MikrotikWL, ip)
 		}
 	}
 
